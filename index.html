@@ -1,0 +1,102 @@
+<canvas id="canvas" width="400" height="400" style="background-color: azure">
+    
+</canvas>
+
+<script>
+    const element = document.getElementById('canvas');
+    const context = element.getContext('2d');
+    
+    context.beginPath();
+    context.moveTo(200,130);
+    context.lineTo(140,200);
+    context.lineTo(200,270);
+    context.lineTo(260,200);
+    context.lineTo(200,130);
+    context.closePath(); 
+    context.fillStyle = "blue"; 
+    context.fill();
+    context.stroke();
+    
+    context.beginPath();
+    context.arc(175,185,8,0,2*Math.PI);
+    context.fillStyle = "white"; 
+    context.fill(); 
+    context.strokeStyle = "transparent"; 
+    context.stroke();
+
+    context.fillStyle = "black"; 
+    context.strokeStyle = "black";
+    
+    context.beginPath();
+    context.arc(175,185,4,0,2*Math.PI);
+    context.fillStyle = "black";
+    context.fill();
+    context.strokeStyle = "transparent";
+    context.stroke();
+    
+    context.fillStyle = "black"; 
+    context.strokeStyle = "black";
+    
+    context.beginPath();
+    context.arc(174,184,1.5,0,2*Math.PI);
+    context.fillStyle = "white";
+    context.fill();
+    context.strokeStyle = "transparent";
+    context.stroke();
+    context.fillStyle = "black"; 
+    context.strokeStyle = "black";
+    
+    context.beginPath();
+    context.arc(225,185,8,0,2*Math.PI);
+    context.fillStyle = "white";
+    context.fill();
+    context.strokeStyle = "transparent";
+    context.stroke();
+    context.fillStyle = "black"; 
+    context.strokeStyle = "black";
+    
+    context.beginPath();
+    context.arc(225,185,4,0,2*Math.PI);
+    context.fillStyle = "black";
+    context.fill();
+    context.strokeStyle = "transparent";
+    context.stroke();
+    context.fillStyle = "black"; 
+    context.strokeStyle = "black";
+    
+    context.beginPath();
+    context.arc(224,184,1.5,0,2*Math.PI);
+    context.fillStyle = "white";
+    context.fill();
+    context.strokeStyle = "transparent";
+    context.stroke();
+    context.fillStyle = "black"; 
+    context.strokeStyle = "black";
+    
+    context.beginPath();
+    context.arc(200, 215, 23, 0.2*Math.PI, 0.8*Math.PI);
+    context.fillStyle = "black";
+    context.fill();
+    context.strokeStyle = "transparent";
+    context.stroke();
+    context.fillStyle = "black"; 
+    context.strokeStyle = "black";
+    
+    context.beginPath();
+    context.ellipse(179, 227, 3, 3, 3.9, 2, 4 );
+    context.stroke();
+    
+    context.beginPath();
+    context.ellipse(221, 227, 3, 3, 5.9, 2, 4 );
+    context.stroke();
+    
+    context.beginPath();
+    context.rect(196,228.5,9,6);
+    context.fillStyle = "white";
+    context.fill();
+    context.strokeStyle = "transparent";
+    context.stroke();
+    context.fillStyle = "black"; 
+    context.strokeStyle = "black";
+    
+</script>
