@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Subroutine Hieararchy</title>
+
+<script>
+
+    var canvas;   
+    var graphics; 
+
+    var X_LEFT = -4;    
+    var X_RIGHT = 4;
+    var Y_BOTTOM = -3;
+    var Y_TOP = 3;
+    
+    var BACKGROUND = "white";  
+         
+    var pixelSize;  
+            
+    var frameNumber = 0;  
+    
+    function drawWorld() {
+
+        filledTriangle();
+        filledTriangle1();
+        filledTriangle2();
+        
+        rotatingWielokat();
+        rotatingWielokat1();
+        rotatingWielokat2();
+        rotatingWielokat3();
+        rotatingWielokat4();
+        rotatingWielokat5();
+        
+        filledRect1();
+        filledRect3();
+        filledRect2();
+        
+
+    }
+  
+    function updateFrame() {
+        frameNumber++;
+        
+    }
+ 
+ 
+    
+    function rotatingWielokat() { 
+        graphics.save();
+        graphics.fillStyle = "red";
+        graphics.translate(0.85, -0.6);
+        graphics.rotate( (frameNumber*0.75) * Math.PI/180 );
+        graphics.scale( 1, 1 );
+        filled13Angle();
+        graphics.restore();
+    }
+    
+    function rotatingWielokat1() { 
+        graphics.save();
+        graphics.fillStyle = "red";
+        graphics.translate(-0.9, 0.2);
+        graphics.rotate( (frameNumber*0.75) * Math.PI/180 );
+        graphics.scale( 1, 1 );
+        filled13Angle1();
+        graphics.restore();
+    }
+    function rotatingWielokat2() { 
+        graphics.save();
+        graphics.fillStyle = "red";
+        graphics.translate(3.35, 1.1);
+        graphics.rotate( (frameNumber*0.75) * Math.PI/180 );
+        graphics.scale( 1, 1 );
+        filled13Angle2();
+        graphics.restore();
+    }
+    function rotatingWielokat3() { 
+        graphics.save();
+        graphics.fillStyle = "red";
+        graphics.translate(-2.22, 1);
+        graphics.rotate( (frameNumber*0.75) * Math.PI/180 );
+        graphics.scale( 1, 1 );
+        filled13Angle3();
+        graphics.restore();
+    }
+    function rotatingWielokat4() { 
+        graphics.save();
+        graphics.fillStyle = "red";
+        graphics.translate(2, 1.45);
+        graphics.rotate( (frameNumber*0.75) * Math.PI/180 );
+        graphics.scale( 1, 1 );
+        filled13Angle4();
+        graphics.restore();
+    }
+    function rotatingWielokat5() { 
+        graphics.save();
+        graphics.fillStyle = "red";
+        graphics.translate(-3.5, 1.6);
+        graphics.rotate( (frameNumber*0.75) * Math.PI/180 );
+        graphics.scale( 1, 1 );
+        filled13Angle5();
+        graphics.restore();
+    }
+    
+    function filled13Angle() {
+    graphics.beginPath();
+    
+    const centerX = 0; 
+    const centerY = 0; 
+
+    const radius = 0.5; 
+    const numSides = 13; 
+    const angle = (Math.PI * 2) / numSides; 
+        
+    const startX = centerX + radius * Math.cos(0);
+    const startY = centerY + radius * Math.sin(0);
+    graphics.moveTo(startX, startY);
+
+    for (let i = -1; i < numSides; i++) {
+        const x = centerX + radius * Math.cos(angle * i); 
+        const y = centerY + radius * Math.sin(angle * i); 
+        graphics.lineTo(x, y); 
+        graphics.moveTo(centerX, centerY); 
+        graphics.lineTo(x, y); 
+    }
+    graphics.closePath(); 
+    graphics.stroke(); 
+        
+}
+    function filled13Angle1() {
+    graphics.beginPath();
+    
+    const centerX = 0; 
+    const centerY = 0; 
+
+    const radius = 0.5; 
+    const numSides = 13; 
+    const angle = (Math.PI * 2) / numSides; 
+        
+    const startX = centerX + radius * Math.cos(0);
+    const startY = centerY + radius * Math.sin(0);
+    graphics.moveTo(startX, startY);
+
+    for (let i = -1; i < numSides; i++) {
+        const x = centerX + radius * Math.cos(angle * i); 
+        const y = centerY + radius * Math.sin(angle * i); 
+        graphics.lineTo(x, y); 
+        graphics.moveTo(centerX, centerY); 
+        graphics.lineTo(x, y); 
+    }
+    graphics.closePath(); 
+    graphics.stroke(); 
+        
+}
+    function filled13Angle2() {
+    graphics.beginPath();
+    
+    const centerX = 0; 
+    const centerY = 0; 
+
+    const radius = 0.5; 
+    const numSides = 13; 
+    const angle = (Math.PI * 2) / numSides; 
+        
+    const startX = centerX + radius * Math.cos(0);
+    const startY = centerY + radius * Math.sin(0);
+    graphics.moveTo(startX, startY);
+
+    for (let i = -1; i < numSides; i++) {
+        const x = centerX + radius * Math.cos(angle * i); 
+        const y = centerY + radius * Math.sin(angle * i); 
+        graphics.lineTo(x, y); 
+        graphics.moveTo(centerX, centerY); 
+        graphics.lineTo(x, y); 
+    }
+    graphics.closePath(); 
+    graphics.stroke(); 
+        
+}
+    function filled13Angle3() {
+    graphics.beginPath();
+    
+    const centerX = 0; 
+    const centerY = 0; 
+
+    const radius = 0.5; 
+    const numSides = 13; 
+    const angle = (Math.PI * 2) / numSides; 
+        
+    const startX = centerX + radius * Math.cos(0);
+    const startY = centerY + radius * Math.sin(0);
+    graphics.moveTo(startX, startY);
+
+    for (let i = -1; i < numSides; i++) {
+        const x = centerX + radius * Math.cos(angle * i); 
+        const y = centerY + radius * Math.sin(angle * i); 
+        graphics.lineTo(x, y); 
+        graphics.moveTo(centerX, centerY); 
+        graphics.lineTo(x, y); 
+    }
+    graphics.closePath(); 
+    graphics.stroke(); 
+        
+}
+    function filled13Angle4() {
+    graphics.beginPath();
+    
+    const centerX = 0; 
+    const centerY = 0; 
+
+    const radius = 0.5; 
+    const numSides = 13; 
+    const angle = (Math.PI * 2) / numSides; 
+        
+    const startX = centerX + radius * Math.cos(0);
+    const startY = centerY + radius * Math.sin(0);
+    graphics.moveTo(startX, startY);
+
+    for (let i = -1; i < numSides; i++) {
+        const x = centerX + radius * Math.cos(angle * i); 
+        const y = centerY + radius * Math.sin(angle * i); 
+        graphics.lineTo(x, y); 
+        graphics.moveTo(centerX, centerY); 
+        graphics.lineTo(x, y); 
+    }
+    graphics.closePath(); 
+    graphics.stroke(); 
+        
+}
+    function filled13Angle5() {
+    graphics.beginPath();
+    
+    const centerX = 0; 
+    const centerY = 0; 
+
+    const radius = 0.5; 
+    const numSides = 13; 
+    const angle = (Math.PI * 2) / numSides; 
+        
+    const startX = centerX + radius * Math.cos(0);
+    const startY = centerY + radius * Math.sin(0);
+    graphics.moveTo(startX, startY);
+
+    for (let i = -1; i < numSides; i++) {
+        const x = centerX + radius * Math.cos(angle * i); 
+        const y = centerY + radius * Math.sin(angle * i); 
+        graphics.lineTo(x, y); 
+        graphics.moveTo(centerX, centerY); 
+        graphics.lineTo(x, y); 
+    }
+    graphics.closePath(); 
+    graphics.stroke(); 
+        
+}
+
+
+	function filledTriangle() {
+		graphics.beginPath();
+        graphics.fillStyle = "blue";
+		graphics.moveTo(-0.5,-2.27);
+        graphics.lineTo(0.2,-2.27);
+        graphics.lineTo(-0.1,-0.2);
+		graphics.closePath();
+		graphics.fill();
+	}
+    
+    function filledTriangle1() {
+		graphics.beginPath();
+        graphics.fillStyle = "violet";
+		graphics.moveTo(-3.5,-0.5);
+        graphics.lineTo(-2.5,-0.5);
+        graphics.lineTo(-2.95,1.3);
+		graphics.closePath();
+		graphics.fill();
+	}
+    
+    function filledTriangle2() {
+		graphics.beginPath();
+        graphics.fillStyle = "green";
+		graphics.moveTo(3.1,-0.5);
+        graphics.lineTo(2.3,-0.5);
+        graphics.lineTo(2.65,1.3);
+		graphics.closePath();
+		graphics.fill();
+	}
+    
+    function filledRect1() {
+        graphics.beginPath();
+        graphics.fillStyle = "red";
+        graphics.rotate(Math.PI / 2.7);
+        graphics.closePath();
+        graphics.fillRect(-0.25,-1.05,0.12,2);
+    }
+    
+    function filledRect3() {
+        graphics.beginPath();
+        graphics.fillStyle = "red";
+        graphics.rotate(Math.PI / 19.9);
+        graphics.closePath();
+        graphics.fillRect(1.85,-3,0.12,1.5);
+    }
+    
+    function filledRect2() {
+        graphics.beginPath();
+        graphics.fillStyle = "red";
+        graphics.rotate(Math.PI / -19.9);
+        graphics.closePath();
+        graphics.fillRect(0,2.4,0.12,1.5);
+    }
+    
+    
+
+    function draw() {
+        graphics.save();  
+        graphics.fillStyle = BACKGROUND;  
+        graphics.fillRect(0,0,canvas.width,canvas.height);
+        graphics.fillStyle = "black";
+        applyLimits(graphics,X_LEFT,X_RIGHT,Y_TOP,Y_BOTTOM,false);
+        graphics.lineWidth = pixelSize;  
+        drawWorld();
+        graphics.restore();
+    }
+    
+    function applyLimits(g, xleft, xright, ytop, ybottom, preserveAspect) {
+       var width = canvas.width;   
+       var height = canvas.height; 
+       if (preserveAspect) {
+          var displayAspect = Math.abs(height / width);
+          var requestedAspect = Math.abs(( ybottom-ytop ) / ( xright-xleft ));
+          var excess;
+          if (displayAspect > requestedAspect) {
+             excess = (ybottom-ytop) * (displayAspect/requestedAspect - 1);
+             ybottom += excess/2;
+             ytop -= excess/2;
+          }
+          else if (displayAspect < requestedAspect) {
+             excess = (xright-xleft) * (requestedAspect/displayAspect - 1);
+             xright += excess/2;
+             xleft -= excess/2;
+          }
+       }
+       var pixelWidth = Math.abs(( xright - xleft ) / width);
+       var pixelHeight = Math.abs(( ybottom - ytop ) / height);
+       pixelSize = Math.min(pixelWidth,pixelHeight);
+       g.scale( width / (xright-xleft), height / (ybottom-ytop) );
+       g.translate( -xleft, -ytop );
+    }
+    
+    var running = false;  
+    
+    function frame() {
+        if (running) {
+               
+            updateFrame();
+            draw();
+            requestAnimationFrame(frame);
+        }
+    }
+    
+    function doAnimationCheckbox() { 
+        var shouldRun = document.getElementById("animateCheck").checked;
+        if ( shouldRun != running ) {
+            running = shouldRun;
+            if (running)
+                requestAnimationFrame(frame);
+        }
+    }
+
+    function init() {
+        canvas = document.getElementById("thecanvas");
+        if (!canvas.getContext) {
+            document.getElementById("message").innerHTML = "ERROR: Canvas not supported";
+            return;
+        }
+        graphics = canvas.getContext("2d");
+        document.getElementById("animateCheck").checked = false; 
+        document.getElementById("animateCheck").onchange = doAnimationCheckbox; 
+        draw();
+    }
+
+</script>
+
+</head>
+
+<body onload="init()" style="background-color:#EEEEEE">
+
+<h3>Subroutine Hierarchy</h3>
+
+<noscript>
+   <p><b style="color:red">Error: This page requires JavaScript, but it is not available.</b></p>
+</noscript>
+
+<p id="message"><label><input type="checkbox" id="animateCheck"><b>Run the Animation</b></label></p>
+
+<div style="float:left; border: 2px solid black">
+<canvas id="thecanvas" width="800" height="600" style="display:block"></canvas>
+</div>
+
+
+</body>
+</html>
