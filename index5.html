@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Laboratorium 5</title>
+    <script src="glsim.js"></script>
+
+    <script>
+        
+        let rotateX = 85;
+        let rotateY = -45;
+        let rotateZ = 29;
+        
+        function spiral(size, turns) {
+        const segments = 100;
+        const height = 0.1;
+        const green = [0, 1, 0]; 
+        const blue = [0, 0, 1]; 
+        const brown = [0.64, 0.16, 0.16];
+    
+        glBegin(GL_LINE_STRIP);
+        for (let t = 0; t < turns * 360; t += 360 / segments) {
+        let angle = t * Math.PI / 180;
+        let radius = t / (turns * 360) * 0.2; 
+        let x = radius * Math.cos(angle);
+        let y = t / 360 * height;
+        let z = radius * Math.sin(angle);
+        
+        let color;
+        let factor = y / height;
+        if (y < height / 0.3) { 
+            color = interpolateColor(green, blue, factor);
+        } else if (y < 2 * height / 0.3) { 
+            color = interpolateColor(blue, brown, factor);
+        } else { 
+            color = interpolateColor(brown, green, factor);
+        }
+        
+        glColor3fv(color);
+        glVertex3f(x, y, z);
+        }
+        glEnd();
+        }
+        
+        function interpolateColor(color1, color2, factor) {
+        let result = [];
+        for (let i = 0; i < 3; i++) {
+        result[i] = color1[i] + factor * (color2[i] - color1[i]);
+        }
+        return result;
+        }
+
+        function triangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b) {
+        glColor3f(r, g, b);
+        glBegin(GL_TRIANGLES);
+        glVertex3f(x1, y1, z1);
+        glVertex3f(x2, y2, z2);
+        glVertex3f(x3, y3, z3);
+        glEnd();
+        }
+
+        function trzynastokat(r, g, b) {
+            glColor3f(r, g, b);
+            glBegin(GL_TRIANGLE_FAN);
+            glVertex3f(0, 0, 0);
+            for (var i = 0; i <= 13; i++) {
+                var angle = 2 * Math.PI * i / 13;
+                var x = 0.5 * Math.cos(angle);
+                var y = 0.5 * Math.sin(angle);
+                glVertex3f(x, y, 0);
+            }
+            glEnd();
+        }
+
+        function piramida(size) {
+            
+          glPushMatrix();
+          glScalef(size, size, size);
+
+          trzynastokat(1, 0, 0);
+
+          for (var i = 0; i < 13; i++) {
+              
+              glPushMatrix();
+              
+              glRotatef(i * (360 / 13), 0, 0, 1);
+
+              var r = Math.random();
+              var g = Math.random();
+              var b = Math.random();
+
+              var x1 = 0;
+              var y1 = 0;
+              var z1 = -0.5;
+              
+              var x2 = 0.5 * Math.cos(2 * Math.PI * i / 13);
+              var y2 = 0.5 * Math.sin(2 * Math.PI * i / 13);
+              var z2 = 0;
+              
+              var x3 = 0.5 * Math.cos(2 * Math.PI * (i + 1) / 13);
+              var y3 = 0.5 * Math.sin(2 * Math.PI * (i + 1) / 13);
+              var z3 = 0;
+      
+              triangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, r, g, b);
+      
+              glPopMatrix();
+          }
+
+          glPopMatrix();
+            
+          }
+
+
+        function display1() {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glLoadIdentity();
+            glRotatef(rotateZ, 0, 0, 1);
+            glRotatef(rotateY, 0, 1, 0);
+            glRotatef(rotateX, 1, 0, 0);
+            piramida(1);
+        }
+        function display2() {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glLoadIdentity();
+            glRotatef(rotateZ, 0, 0, 1);
+            glRotatef(rotateY, 0, 1, 0);
+            glRotatef(rotateX, 1, 0, 0);
+            spiral(2, 13);
+        }
+
+        function initGL() {
+            glMatrixMode(GL_PROJECTION);
+            glOrtho(-1, 1, -1, 1, -1, 1);
+            glMatrixMode(GL_MODELVIEW);
+            glEnable(GL_DEPTH_TEST);
+            glClearColor(0, 0, 0, 1);
+        }
+
+        let objectNumber = 1; 
+
+        function doKeyDown(evt) {
+            let key = evt.keyCode;
+            if (key == 49) {
+                objectNumber = 1;
+                display1();
+            }
+            else if (key == 50) {
+                objectNumber = 2;
+                display2();
+            }
+            else if (key == 37 || key == 39 || key == 40 || key == 38 || key == 33 || key == 34 || key == 36) {
+                handleRotationKeys(key);
+            }
+        }
+
+        function handleRotationKeys(key) {
+            if (key == 37) // left
+                rotateY -= 15;
+            else if (key == 39) // right
+                rotateY += 15;
+            else if (key == 40) // down
+                rotateX += 15;
+            else if (key == 38) // up
+                rotateX -= 15;
+            else if (key == 33) // page up
+                rotateZ += 15;
+            else if (key == 34) // page down
+                rotateZ -= 15;
+            else if (key == 36)  // home
+                rotateX = rotateY = rotateZ = 0;
+        
+            if (objectNumber == 1)
+                display1();
+            else if (objectNumber == 2)
+                display2();
+        }
+
+        function init() {
+            try {
+                glsimUse("glcanvas"); // OpenGL rysuje na canvasie o id="glcanvas".
+            }
+            catch (e) {
+                document.getElementById("canvas-holder").innerHTML =
+                    "Sorry, there is an error:<br>" + e;
+                return;
+            }
+            document.onkeydown = doKeyDown;
+            initGL();
+            
+        }
+
+    </script>
+
+</head>
+
+<body onload="init()">
+
+    <h3>Klikaj 1 dla wybory piramidy lub 2 dla wyboru korkociagu!</h3>
+
+    <p>(Obracaj za pomocą strzałek, klawiszy page up/down oraz home.)</p>
+
+    <noscript>
+        <p><b>Sorry, you need to enable JavaScript!</b></p>
+    </noscript>
+
+    <div id="canvas-holder">
+        <canvas id="glcanvas" width="500" height="500"></canvas>
+    </div>
+
+</body>
+
+</html>
