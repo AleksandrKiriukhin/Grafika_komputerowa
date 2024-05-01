@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Textures and Texture Transforms</title>
+<link rel="stylesheet" href="./Textures and Texture Transforms_files/demo.css">
+<style>
+#texcanvas {
+    background-image: url("./textures/mandelbrot.jpeg");
+    background-size: 100px 100px;
+}
+</style>
+<script src="./Textures and Texture Transforms_files/demo-core.js"></script>
+<script src="./Textures and Texture Transforms_files/glsim.js"></script>
+<script src="./Textures and Texture Transforms_files/teapot-model-IFS.js"></script>
+<script src="./Textures and Texture Transforms_files/basic-object-models-IFS.js"></script>
+<script src="./Textures and Texture Transforms_files/slider-canvas.js"></script>
+<script>
+
+var camera;
+
+var graphics;  // for drawing on the canvas that shows the texture
+
+var frameNumber = 0;  // frame number for the animation
+
+var pyramid, cubeModel, cylinder, cone, torus, teapot;  // model data for six objects.
+
+var sliderScale, sliderTranslateX, sliderTranslateY, sliderRotate;
+
+var scale = 1;
+var translateX = 0;
+var translateY = 0;
+var rotate = 0;
+
+var loadingImages = true;
+var textureImages = new Array();  // Will hold Image objects loaded from image URLs.
+var textureImageURLs = [
+    "./textures/mandelbrot.jpeg"
+];
+
+function draw() {
+
+    scale = sliderScale.value(0);
+    rotate = sliderRotate.value(0);
+    translateX = sliderTranslateX.value(0);
+    translateY = sliderTranslateY.value(0);
+
+    drawTextureCanvas(); // Draws the canvas that displays the texture.
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (loadingImages) {
+        return;
+    }
+    
+    var texnum = Number(document.getElementById("texture").value);
+    var objectNumber = Number(document.getElementById("object").value);
+    var image = textureImages[texnum];
+    glEnable(GL_TEXTURE_2D);
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,image.width,image.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // MUST set this since we don't have mipmaps
+    
+    glMatrixMode(GL_TEXTURE);
+    glLoadIdentity();
+    glTranslatef(translateX,translateY, 0);
+    glRotatef(rotate,0,0,1);
+    glScalef(scale,scale,1);
+    glMatrixMode(GL_MODELVIEW);
+    
+    camera.apply();
+    
+    switch(objectNumber) {
+    case 0:
+        glRotatef(-90,1,0,0);
+        glScalef(1.5,1.5,1.5);
+        drawModel(piramida(1));
+        break;
+    }
+}
+
+function drawTextureCanvas() {
+    if (loadingImages) {
+        graphics.fillStyle = "white";
+        graphics.fillRect(0,0,300,300);
+        graphics.fillStyle = "black";
+        graphics.font = "14px serif";
+        graphics.fillText("Waiting for images to load...", 10, 40);
+        return;
+    }
+    graphics.clearRect(0,0,300,300);
+    graphics.save();
+    graphics.translate(100,200);
+    graphics.scale(1,-1);
+    graphics.translate(translateX*100,translateY*100);
+    graphics.rotate(rotate/180 * Math.PI);
+    graphics.scale(scale,scale);
+    graphics.lineWidth = 5/scale;
+    graphics.strokeStyle = "white";
+    graphics.strokeRect(-.5,-.5,100,100);
+    graphics.lineWidth = 1/scale;
+    graphics.strokeStyle = "black";
+    graphics.strokeRect(-.5,-.5,100,100);
+    graphics.restore();
+}
+
+function triangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, tx1, ty1, tx2, ty2, tx3, ty3) {
+    //glBindTexture(GL_TEXTURE_2D, texture);
+    glBegin(GL_TRIANGLES);
+    glTexCoord2f(tx1, ty1);
+    glVertex3f(x1, y1, z1);
+    glTexCoord2f(tx2, ty2);
+    glVertex3f(x2, y2, z2);
+    glTexCoord2f(tx3, ty3);
+    glVertex3f(x3, y3, z3);
+    glEnd();
+}
+
+function trzynastokat() {
+    //glBindTexture(GL_TEXTURE_2D, texture);
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(0, 0, 0);
+    for (var i = 0; i <= 13; i++) {
+        var angle = 2 * Math.PI * i / 13;
+        var x = 0.5 * Math.cos(angle);
+        var y = 0.5 * Math.sin(angle);
+        glVertex3f(x, y, 0);
+    }
+    glEnd();
+}
+
+function piramida(size) {
+    //glEnable(GL_TEXTURE_2D);
+    
+    glPushMatrix();
+    glScalef(size, size, size);
+
+    trzynastokat();
+
+    for (var i = 0; i < 13; i++) {
+        
+        glPushMatrix();
+        
+        glRotatef(i * (360 / 13), 0, 0, 1);
+
+        var x1 = 0;
+        var y1 = 0;
+        var z1 = -0.5;
+        
+        var x2 = 0.5 * Math.cos(2 * Math.PI * i / 13);
+        var y2 = 0.5 * Math.sin(2 * Math.PI * i / 13);
+        var z2 = 0;
+        
+        var x3 = 0.5 * Math.cos(2 * Math.PI * (i + 1) / 13);
+        var y3 = 0.5 * Math.sin(2 * Math.PI * (i + 1) / 13);
+        var z3 = 0;
+        
+        var tx1 = 0.5;
+        var ty1 = 0.5;
+        var tx2 = (Math.cos(2 * Math.PI * i / 13) + 1) / 2;
+        var ty2 = (Math.sin(2 * Math.PI * i / 13) + 1) / 2;
+        var tx3 = (Math.cos(2 * Math.PI * (i + 1) / 13) + 1) / 2;
+        var ty3 = (Math.sin(2 * Math.PI * (i + 1) / 13) + 1) / 2;
+
+        triangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, tx1, ty1, tx2, ty2, tx3, ty3);
+    
+        glPopMatrix();
+    }
+
+    glPopMatrix();
+    
+    //glDisable(GL_TEXTURE_2D);
+}
+
+
+/**
+ *  Draws a model using glDrawElements.  The model data must be in the format produced by
+ *  the functions in basic-object-models-IFS.js.
+ */
+function drawModel(model) {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3,GL_FLOAT,0,model.vertexPositions);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glNormalPointer(GL_FLOAT, 0, model.vertexNormals);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glTexCoordPointer(2,GL_FLOAT,0,model.vertexTextureCoords);
+    glDrawElements(GL_TRIANGLES, model.indices.length, GL_UNSIGNED_BYTE, model.indices);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);    
+}
+
+function initGL() {
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_DEPTH_TEST);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [ 1, 1, 1, 1 ]); // white, for texturing
+    glClearColor(0,0,0,1);
+    var lightAmbient = [0.3, 0.3, 0.3, 1]; 
+    var lightDiffuse = [0.7, 0.7, 0.7, 1]; 
+    var lightPosition = [0, 5, -10, 0]; 
+    
+    
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+
+}
+
+function loadImages() {
+    var loadedCt = 0;
+    for (var i = 0; i < textureImageURLs.length; i++) {
+        textureImages[i] = new Image();
+        textureImages[i].onload = imageLoaded;
+        textureImages[i].src = textureImageURLs[i];
+    }
+    function imageLoaded() {
+        loadedCt++;
+        if (loadedCt == textureImageURLs.length) {
+            loadingImages = false;
+            glEnable(GL_TEXTURE_2D);
+            var texnum = Number(document.getElementById("texture").value);
+            var image = textureImages[texnum];
+            try {
+                glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,image.width,image.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image);
+            } catch(e) {
+                // Some browsers (Chrome at least) get a Security error if they try to use an image from the local disk.
+				document.getElementById("headline").innerHTML="Can't access texture.<br>Note: Some browsers can't use a file from a local disk."
+                return;
+            }
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // MUST set this since we don't have mipmaps
+            draw();
+            document.getElementById("object").disabled = false;
+            document.getElementById("texture").disabled = false;
+        }
+    }
+}
+
+function changeTexture() {
+    var texnum = Number(document.getElementById("texture").value);
+    document.getElementById("texcanvas").style.backgroundImage = "url('" + textureImageURLs[texnum] + "')";
+    var image = textureImages[texnum];
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,image.width,image.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image);
+    draw();
+}
+
+function doReset() {
+    sliderRotate.setValue(0,0);
+    sliderScale.setValue(0,1);
+    sliderTranslateX.setValue(0,0);
+    sliderTranslateY.setValue(0,0);
+    camera.lookAt(100,7,20);
+    draw();
+}
+
+function init() {
+    try {
+        glsimUse("maincanvas");
+        var texcanvas = document.getElementById("texcanvas");
+        graphics = texcanvas.getContext('2d');
+    }
+    catch (e) {
+        document.getElementById("canvas-holder").innerHTML="<p><b>Sorry, an error occurred:<br>" +
+                e + "</b></p>";
+        return;
+    }
+    document.getElementById("reset").onclick = doReset;
+    document.getElementById("object").value = "1";
+    document.getElementById("object").onchange = draw;
+    document.getElementById("texture").value = "2";
+    document.getElementById("texture").onchange = changeTexture;
+    document.getElementById("object").disabled = true;
+    document.getElementById("texture").disabled = true;
+    sliderRotate = new SliderCanvas(document.getElementById("scRotate"));
+    sliderRotate.addSlider({label:"rotate", min:-180, max:180, value:0});
+    sliderScale = new SliderCanvas(document.getElementById("scScale"));
+    sliderScale.addSlider({label:"scale", min: 0.5, max:2, step:0.01, value:1, decimals:2});
+    sliderTranslateX = new SliderCanvas(document.getElementById("scTransX"));
+    sliderTranslateX.addSlider({label:"x-trans.", min: -0.5, max:0.5, step:0.01, value:0, decimals:2});
+    sliderTranslateY = new SliderCanvas(document.getElementById("scTransY"));
+    sliderTranslateY.addSlider({label:"y-trans.", min: -0.5, max:0.5, step:0.01, value:0, decimals:2});
+    sliderRotate.onChange = draw;
+    sliderScale.onChange = draw;
+    sliderTranslateX.onChange = draw;
+    sliderTranslateY.onChange = draw;
+    initGL();
+    camera = new Camera();
+    camera.setScale(1);
+    camera.lookAt(100,7,20);
+    camera.installTrackball(draw);
+    pyramid = piramida(1);
+    sliderRotate.draw();
+    sliderScale.draw();
+    sliderTranslateX.draw();
+    sliderTranslateY.draw();
+    drawTextureCanvas();
+    loadImages();
+}
+
+</script>
+</head>
+<body onload="init()">
+
+<div id="content">
+
+<h3 id="headline">Textures and Texture Transforms</h3>
+<table border="0" cellspacing="0" cellpadding="8">
+<tbody><tr>
+<td><div id="canvas-holder"><canvas id="texcanvas" width="300" height="300"></canvas></div></td>
+<td><canvas id="maincanvas" width="300" height="300"></canvas></td>
+</tr>
+<tr align="center">
+<td colspan="2">
+    <b>Texture:</b>
+    <select id="texture">
+        <option value="0">Mandelbrot</option>
+    </select>
+    <b style="margin-left:40px">Object</b>:
+    <select id="object">
+       <option value="0">Pyramid</option>
+    </select>
+    <button id="reset" style="margin-left:40px">Reset</button>
+</td>
+</tr>
+<tr align="center">
+<td>
+    <canvas id="scScale" width="280" height="50"></canvas>
+</td>
+<td>
+    <canvas id="scTransX" width="280" height="50"></canvas>
+</td>
+</tr>
+<tr align="center">
+<td>
+    <canvas id="scRotate" width="280" height="50"></canvas>
+</td>
+<td>
+    <canvas id="scTransY" width="280" height="50"></canvas>
+</td>
+</tr>
+</tbody></table>
+</div>
+</body></html>

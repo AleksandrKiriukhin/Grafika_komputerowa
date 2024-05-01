@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<!--
+    Draws a 2D scene using OpenGL, then copies that scene to a
+    texture image so that it can be applied as a texture to a
+    3D object. The scene can be animated.
+-->
+<head>
+<meta charset="UTF-8">
+<title>Texture From Color Buffer</title>
+<link rel="stylesheet" href="./Textures and Texture Transforms_files/demo.css">
+<script src="./Textures and Texture Transforms_files/demo-core.js"></script>
+<script src="./Textures and Texture Transforms_files/glsim.js"></script>
+<script src="./Textures and Texture Transforms_files/teapot-model-IFS.js"></script>
+<script src="./Textures and Texture Transforms_files/basic-object-models-IFS.js"></script>
+<script src="./Textures and Texture Transforms_files/slider-canvas.js"></script>
+<script>
+
+var camera;
+var canvas;  // the canvas on which we will draw.
+var frameNumber = 0;  // frame number for the animation
+var piramida;  // model data for six objects.
+
+function piramida(width, height, slices, noBottom) {
+    width = width || 1;
+    height = height || 1;
+    slices = slices || 13; 
+
+    var vertexCount = (slices + 1) * 4;
+    if (!noBottom) vertexCount += slices + 2; 
+    var triangleCount = slices * 2 + (slices - 2) * 2;
+    if (!noBottom) triangleCount += slices;
+
+    var vertices = new Float32Array(vertexCount * 3);
+    var normals = new Float32Array(vertexCount * 3);
+    var texCoords = new Float32Array(vertexCount * 2);
+    var indices = new Uint16Array(triangleCount * 3);
+
+    var halfWidth = width / 2;
+    var du = (2 * Math.PI) / slices;
+    var kv = 0;
+    var kt = 0;
+    var k = 0;
+    var i, u;
+
+    for (i = 0; i < slices; i++) {
+        u = i * du;
+        var c = Math.cos(u);
+        var s = Math.sin(u);
+
+        vertices[kv] = halfWidth * c;
+        normals[kv++] = 0;
+        vertices[kv] = halfWidth * s;
+        normals[kv++] = 0;
+        vertices[kv] = -height / 2;
+        normals[kv++] = -1;
+        texCoords[kt++] = 0.5 * (c + 1);
+        texCoords[kt++] = 0.5 * (s + 1);
+
+        vertices[kv] = 0;
+        normals[kv++] = 0;
+        vertices[kv] = 0;
+        normals[kv++] = 0;
+        vertices[kv] = height / 2;
+        normals[kv++] = 1;
+        texCoords[kt++] = 0.5;
+        texCoords[kt++] = 0.5;
+    }
+
+    vertices[kv] = 0;
+    normals[kv++] = 0;
+    vertices[kv] = 0;
+    normals[kv++] = 0;
+    vertices[kv] = height / 2;
+    normals[kv++] = 1;
+    texCoords[kt++] = 0.5;
+    texCoords[kt++] = 0.5;
+
+    for (i = 0; i < slices; i++) {
+        indices[k++] = i * 2;
+        indices[k++] = i * 2 + 1;
+        indices[k++] = (i * 2 + 2) % (slices * 2);
+        indices[k++] = i * 2 + 1;
+        indices[k++] = (i * 2 + 3) % (slices * 2);
+        indices[k++] = (i * 2 + 2) % (slices * 2);
+    }
+
+    if (!noBottom) {
+        var startIndex = kv / 3;
+        vertices[kv] = 0;
+        normals[kv++] = 0;
+        vertices[kv] = 0;
+        normals[kv++] = 0;
+        vertices[kv] = -height / 2;
+        normals[kv++] = -1;
+        texCoords[kt++] = 0.5;
+        texCoords[kt++] = 0.5;
+        for (i = 0; i <= slices; i++) {
+            u = 2 * Math.PI - i * du;
+            var c = Math.cos(u);
+            var s = Math.sin(u);
+            vertices[kv] = c * halfWidth;
+            normals[kv++] = 0;
+            vertices[kv] = s * halfWidth;
+            normals[kv++] = 0;
+            vertices[kv] = -height / 2;
+            normals[kv++] = -1;
+            texCoords[kt++] = 0.5 - 0.5 * c;
+            texCoords[kt++] = 0.5 + 0.5 * s;
+        }
+        for (i = 0; i < slices; i++) {
+            indices[k++] = startIndex;
+            indices[k++] = startIndex + i + 1;
+            indices[k++] = startIndex + i + 2;
+        }
+    }
+
+    return {
+        vertexPositions: vertices,
+        vertexNormals: normals,
+        vertexTextureCoords: texCoords,
+        indices: indices
+    };
+}
+
+function draw() {
+    var objectNumber = Number(document.getElementById("object").value);  // which object to draw.
+
+    /* First, draw the 2D scene, using a 256-by-256 viewport to get a power-of-two texture. */
+    
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_TEXTURE_2D);
+    glViewport(0,0,256,256);  // Note that canvas must be at least 256-by-256.
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, 7, -1, 5, -1, 1);  // Limits required by 2D scene
+    glMatrixMode(GL_MODELVIEW);
+    
+    draw2DScene();
+    
+    if (objectNumber == 1) {
+        return;   // Just show the 2D scene as the image in the canvas.
+    }
+    
+    /* Copy the image into the texture. */
+    
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 256, 256, 0);
+    
+    /* Since we do not have mipmaps for the texture, we MUST set the texture
+       minification filter to GL_NEAREST or GL_LINEAR, since the default
+       filter requires mipmaps. */
+       
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    /* Now, draw the shape, with the texture */    
+    
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+    glViewport(0,0,canvas.width,canvas.height);  // restore full viewport!
+    
+    camera.apply(); // (Sets up projection and viewing transforms.)
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    switch(objectNumber) {
+    case 0:
+        drawModel(piramida);
+        break;
+    case 1:
+        //glScalef(-1.3,-1.3,1.3);
+        draw2DScene();
+        break;
+    }
+}
+
+/**
+ *  Draws a model using glDrawElements.  The model data must be in the format produced by
+ *  the functions in basic-object-models-IFS.js.
+ */
+function drawModel(model) {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3,GL_FLOAT,0,model.vertexPositions);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glNormalPointer(GL_FLOAT, 0, model.vertexNormals);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glTexCoordPointer(2,GL_FLOAT,0,model.vertexTextureCoords);
+    glDrawElements(GL_TRIANGLES, model.indices.length, GL_UNSIGNED_BYTE, model.indices);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);    
+}
+
+
+function initGL() {
+    glEnable(GL_NORMALIZE);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [1, 1, 1, 1]); // white material for texturing.
+}
+
+//----------------- Drawing the 2D scene ----------------------------------------
+
+function drawHouse() {
+    glColor3f(0.6, 0.6, 0.6); 
+    glBegin(GL_QUADS);
+    
+    glVertex3f(-0.5, -0.5, 0.5);
+    glVertex3f(0.5, -0.5, 0.5);
+    glVertex3f(0.5, 0.5, 0.5);
+    glVertex3f(-0.5, 0.5, 0.5);
+
+    glVertex3f(0.5, -0.5, -0.5);
+    glVertex3f(-0.5, -0.5, -0.5);
+    glVertex3f(-0.5, 0.5, -0.5);
+    glVertex3f(0.5, 0.5, -0.5);
+
+    glVertex3f(0.5, -0.5, 0.5);
+    glVertex3f(0.5, -0.5, -0.5);
+    glVertex3f(0.5, 0.5, -0.5);
+    glVertex3f(0.5, 0.5, 0.5);
+  
+    glVertex3f(-0.5, -0.5, -0.5);
+    glVertex3f(-0.5, -0.5, 0.5);
+    glVertex3f(-0.5, 0.5, 0.5);
+    glVertex3f(-0.5, 0.5, -0.5);
+    glEnd();
+
+    glColor3f(0.8, 0.2, 0.2); 
+    glBegin(GL_TRIANGLES);
+
+    glVertex3f(-0.5, 0.5, 0.5);
+    glVertex3f(0.5, 0.5, 0.5);
+    glVertex3f(0, 1, 0.5);
+ 
+    glVertex3f(0.5, 0.5, -0.5);
+    glVertex3f(-0.5, 0.5, -0.5);
+    glVertex3f(0, 1, -0.5);
+    glEnd();
+
+    glColor3f(0.3, 0.2, 0); 
+    glBegin(GL_QUADS);
+    glVertex3f(-0.2, -0.5, 0.501);
+    glVertex3f(0.2, -0.5, 0.501);
+    glVertex3f(0.2, 0, 0.501);
+    glVertex3f(-0.2, 0, 0.501);
+    glEnd();
+
+    glColor3f(0.7, 1.7, 1);
+    glBegin(GL_QUADS);
+    glVertex3f(-0.4, 0.1, 0.502);
+    glVertex3f(-0.2, 0.1, 0.502);
+    glVertex3f(-0.2, 0.3, 0.502);
+    glVertex3f(-0.4, 0.3, 0.502);
+    glEnd();
+}
+
+function draw2DScene() {
+    glClearColor(0.7, 0.8, 1.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT); 
+    glLoadIdentity();
+
+    glColor3f(0, 0.6, 0.2);
+    glBegin(GL_POLYGON);
+    glVertex2f(-3,-1);
+    glVertex2f(1.5,1.65);
+    glVertex2f(5,-1);
+    glEnd();
+    glBegin(GL_POLYGON);
+    glVertex2f(-3,-1);
+    glVertex2f(3,2.1);
+    glVertex2f(7,-1);
+    glEnd();
+    glBegin(GL_POLYGON);
+    glVertex2f(0,-1);
+    glVertex2f(6,1.2);
+    glVertex2f(20,-1);
+    glEnd();
+
+    glPushMatrix();
+    glTranslated(5.8,1,0);
+    drawHouse();
+    glPopMatrix();
+} 
+
+//-------------------------------------------------------------------------------
+
+var animating = false;
+
+function frame() {
+    if (animating) {
+        frameNumber++;
+        draw();
+        setTimeout(frame, 30);
+    }
+}
+
+function doAnimate() {
+    animating = document.getElementById("animate").checked;
+    if (animating) {
+        frame();
+    }
+}
+
+function init() {
+    try {
+        canvas = document.getElementById("maincanvas");
+        glsimUse(canvas,null); // ( The "null" gives an RGBA color buffer instead of RGB.
+		                      //   It is needed here because the call to copyTexImage2D
+		                      //   uses the RGBA format. )
+    }
+    catch (e) {
+        document.getElementById("canvas-holder").innerHTML="<p><b>Sorry, an error occurred:<br>" +
+                e + "</b></p>";
+        return;
+    }
+    initGL();
+    document.getElementById("object").value = "1";
+    document.getElementById("object").onchange = draw;
+    document.getElementById("animate").checked = false;
+    document.getElementById("animate").onchange = doAnimate;
+    camera = new Camera();
+    piramida = piramida();
+    camera.setScale(1);
+    camera.installTrackball(draw); 
+    draw();
+}
+
+</script>
+</head>
+<body onload="init()">
+
+<div id="content">
+
+<h3 id="headline">Drawing a Texture</h3>
+
+<div id="canvas-holder">
+
+<canvas id="maincanvas" width="400" height="350"></canvas>
+</div>
+
+<br clear=all>
+
+<p style="text-indent:30px"><b>Object</b>:
+<select id="object">
+   <option value="0">Piramida</option>
+   <option value="1">SHOW 2D SCENE</option>
+</select>
+<label><input type="checkbox" id="animate" style="margin-left:30px"><b>Animate</b></label></p>
+</div>
+
+
+
+<div id="help-content" style="display:none">
+<h3>About this demo...</h3>
+<p>This program demonstrates the use of the OpenGL function <i>glCopyTexImage2D</i>,
+which  copies an image from the color buffer (where OpenGL draws its images) into
+a texture.  This makes it possible to draw an image with OpenGL and then use
+the image as a texture on other objects.</p>
+<p>A pop-up menu lets you select the object on which the texture image is
+used.  The last entry in the menu is "SHOW 2D SCENE."  In that case,
+you see the color buffer just after the 2D scene has been drawn, instead of
+seeing a 3D object with the scene as a texture.  Note that the 2D scene
+does not fill the canvas.  In fact, it is drawn in a 256-by-256 viewport, since
+the width and height of a texture image should be powers of two.</p>
+<p>If you turn on animation, the scene shown in the texture image is animated.
+A new version of the scene is drawn and copied to the texture for each frame.
+In this case, the texture image is a 2D cart-and-windmill animation that should
+be familiar from other examples.</p>
+<p>As usual, you can rotate the 3D objects using your mouse.</p>
+</div>
+
+
+
+<!-- support for help text -- do not change. -->
+<div id="help-icon">
+<img src="../image/question32.png" onclick="showDemoHelp()"
+    title="Click here for information about this demo." width="32" height="32">
+</div>
+<div id="hide-help-icon">
+<img src="../image/close32.png" onclick="showDemoHelp()"
+    title="Click here to return to the demo." width="65" height="32">
+</div>
+<div id="helpBG" style="display:none"></div>
+</body>
+</html>
